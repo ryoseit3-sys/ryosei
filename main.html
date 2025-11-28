@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歩数計</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #startBtn, #permissionBtn {
+      padding: 15px 25px;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>歩数計</h1>
+
+  <!-- iPhone用 許可ボタン -->
+  <button id="permissionBtn">📱 加速度センサーを有効にする</button>
+
+  <!-- 計測開始ボタン -->
+  <button id="startBtn" disabled>▶ 計測開始</button>
+
+  <p id="count">歩数：0</p>
+
+  <script>
+
+    // ----------- iPhone用の permission ボタン -----------
+    document.getElementById("permissionBtn").addEventListener("click", async () => {
+      if (typeof DeviceMotionEvent.requestPermission === "function") {
+
+        const response = await DeviceMotionEvent.requestPermission();
+        if (response === "granted") {
+          alert("加速度センサーが許可されました！");
+          document.getElementById("startBtn").disabled = false;
+        } else {
+          alert("加速度センサーが許可されませんでした");
+        }
+
+      } else {
+        // Android / PC
+        alert("この端末は許可不要です。");
+        document.getElementById("startBtn").disabled = false;
+      }
+    });
+
+    // ----------- 歩数計ロジック -----------
+    let steps = 0;
+    let lastAcc = 0;
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      window.addEventListener("devicemotion", (e) => {
+        const total = Math.abs(e.acceleration.x) + Math.abs(e.acceleration.y) + Math.abs(e.acceleration.z);
+
+        if (total > 15 && lastAcc <= 15) {
+          steps++;
+          document.getElementById("count").innerText = "歩数：" + steps;
+        }
+
+        lastAcc = total;
+      });
+
+      alert("計測を開始しました！");
+    });
+
+  </script>
+</body>
+</html>
